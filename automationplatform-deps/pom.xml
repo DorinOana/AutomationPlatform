@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  automationplatform-deps (INTERNAL)
+
+  Purpose:
+  - Internal dependency parent (packaging=pom).
+  - Centralizes dependencyManagement for ALL internal code modules:
+      automationplatform-core, automationplatform-api, automationplatform-ui, etc.
+  - Prevents duplication of dependency versions across modules.
+  - NOT intended to be consumed directly by external projects.
+
+  Rule:
+  - Every internal code module MUST use this POM as its <parent>.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.dorin.automationplatform</groupId>
+        <artifactId>automationplatform</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>automationplatform-deps</artifactId>
+    <packaging>pom</packaging>
+    <name>AutomationPlatform Deps Parent</name>
+
+    <properties>
+        <!-- Core -->
+        <slf4j.version>2.0.17</slf4j.version>
+        <log4j2.version>2.25.3</log4j2.version>
+
+        <!-- Testing -->
+        <junit.jupiter.version>5.14.2</junit.jupiter.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- Log4j2 manages its own internal module versions -->
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-bom</artifactId>
+                <version>${log4j2.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- SLF4J API -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+            <!-- JUnit (single entry for convenience) -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit.jupiter.version}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>

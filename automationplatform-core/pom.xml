@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  automationplatform-core
+
+  Purpose:
+  - Core shared infrastructure used by all other AutomationPlatform modules.
+  - Contains cross-cutting concerns: logging, configuration, JUnit5 extensions, utilities, etc.
+  - Depends on SLF4J API and uses Log4j2 as the default implementation.
+
+  Note:
+  - This module's parent is automationplatform-deps to inherit dependencyManagement versions.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.dorin.automationplatform</groupId>
+        <artifactId>automationplatform-deps</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../automationplatform-deps/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>automationplatform-core</artifactId>
+    <name>AutomationPlatform Core</name>
+
+    <dependencies>
+        <!-- Logging API -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- Log4j2 runtime -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
+
+        <!-- Bind SLF4J -> Log4j2 (so all libs using SLF4J go through Log4j2) -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+        </dependency>
+
+        <!-- Tests -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

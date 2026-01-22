@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  AutomationPlatform - Root Aggregator POM
+
+  Purpose:
+  - Aggregates all modules into a single Maven reactor build.
+  - Defines common build plugin management (compiler/surefire) and project-wide properties.
+  - DOES NOT provide library dependencyManagement (that lives in automationplatform-deps).
+  - Is NOT meant to be used as a dependency by external projects.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.dorin.automationplatform</groupId>
+    <artifactId>automationplatform</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>AutomationPlatform</name>
+
+    <modules>
+        <module>automationplatform-deps</module>
+        <module>automationplatform-bom</module>
+        <module>automationplatform-core</module>
+        <!-- future: automationplatform-api, automationplatform-ui, automationplatform-mock, ... -->
+    </modules>
+
+    <properties>
+        <!-- Produce bytecode compatible with Java 17 (build can run on any JDK 17+). -->
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Plugin versions (centralized) -->
+        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
+
+        <!-- Surefire tag filters (JUnit5 @Tag). Empty = run everything. -->
+        <groups></groups>
+        <excludedGroups></excludedGroups>
+    </properties>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.compiler.plugin.version}</version>
+                    <configuration>
+                        <release>${maven.compiler.release}</release>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven.surefire.plugin.version}</version>
+                    <configuration>
+                        <!-- Helps avoid JPMS/module-path edge cases in test automation setups -->
+                        <useModulePath>false</useModulePath>
+                        <groups>${groups}</groups>
+                        <excludedGroups>${excludedGroups}</excludedGroups>
+                    </configuration>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
+    </build>
+
+</project>

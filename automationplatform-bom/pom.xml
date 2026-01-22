@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  automationplatform-bom (EXTERNAL)
+
+  Purpose:
+  - Bill Of Materials (BOM) to be IMPORTED by external test projects that use AutomationPlatform.
+  - Provides a consistent, compatible set of dependency versions.
+  - DOES NOT contain code (packaging=pom).
+  - DOES NOT act as parent for internal modules.
+
+  Usage in a test project:
+    <dependencyManagement>
+      <dependencies>
+        <dependency>
+          <groupId>io.dorin.automationplatform</groupId>
+          <artifactId>automationplatform-bom</artifactId>
+          <version>...</version>
+          <type>pom</type>
+          <scope>import</scope>
+        </dependency>
+      </dependencies>
+    </dependencyManagement>
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Keep this BOM independent to avoid Maven import cycles. -->
+    <groupId>io.dorin.automationplatform</groupId>
+    <artifactId>automationplatform-bom</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>AutomationPlatform BOM</name>
+
+    <properties>
+        <!-- Mirror the versions from automationplatform-deps (external contract). -->
+        <slf4j.version>2.0.17</slf4j.version>
+        <log4j2.version>2.25.3</log4j2.version>
+        <junit.jupiter.version>5.14.2</junit.jupiter.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-bom</artifactId>
+                <version>${log4j2.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit.jupiter.version}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>
