@@ -6,13 +6,40 @@ on:
   pull_request:
     branches: [ "master" ]
 
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "What to run"
+        required: true
+        default: "smoke"
+        type: choice
+        options:
+          - smoke
+          - full
+      sync_bom:
+        description: "After tests pass, sync deps -> bom and push changes (master only)"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Prevent infinite loops when the workflow auto-commits with [skip ci]
+    if: >
+      github.event_name != 'push' ||
+      (github.event.head_commit.message && !contains(github.event.head_commit.message, '[skip ci]'))
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -21,10 +48,51 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
-      - name: Build and test
+      - name: Run tests (push/PR default behavior)
+        if: github.event_name != 'workflow_dispatch'
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             mvn -q test -Dgroups=smoke
           else
             mvn -q clean install
           fi
+
+      - name: Run tests (manual dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ "${{ inputs.mode }}" = "smoke" ]; then
+            mvn -q test -Dgroups=smoke
+          else
+            mvn -q clean install
+          fi
+
+      # Optional guardrail: on normal pushes, you can verify BOM is in sync without auto-committing.
+      # If you want this, uncomment the next block.
+      # - name: Sync deps -> bom (check only)
+      #   if: github.event_name != 'workflow_dispatch'
+      #   run: |
+      #     ./scripts/sync-versions-deps-to-bom.sh
+      #     git diff --exit-code
+
+      - name: Sync deps -> bom (manual, with optional push)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          ./scripts/sync-versions-deps-to-bom.sh
+
+      - name: Commit & push BOM changes (manual, master only)
+        if: >
+          github.event_name == 'workflow_dispatch' &&
+          inputs.sync_bom == true &&
+          github.ref_name == 'master'
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add automationplatform-bom/pom.xml
+          git commit -m "chore(bom): sync versions from deps [skip ci]"
+          git push origin master
