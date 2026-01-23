@@ -33,9 +33,10 @@
         <!-- Core -->
         <slf4j.version>2.0.17</slf4j.version>
         <log4j2.version>2.25.3</log4j2.version>
-
         <!-- Testing -->
         <junit.jupiter.version>5.14.2</junit.jupiter.version>
+        <!-- Reporting -->
+        <allure.version>2.32.0</allure.version>
     </properties>
 
     <dependencyManagement>
@@ -57,13 +58,24 @@
                 <version>${slf4j.version}</version>
             </dependency>
 
-            <!-- JUnit (single entry for convenience) -->
+            <!-- JUnit manages its own internal platform module versions -->
             <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter</artifactId>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
                 <version>${junit.jupiter.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
+
+            <!-- Allure manages its own internal module versions -->
+            <dependency>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-bom</artifactId>
+                <version>${allure.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

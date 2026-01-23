@@ -96,3 +96,13 @@ jobs:
           git add automationplatform-bom/pom.xml
           git commit -m "chore(bom): sync versions from deps [skip ci]"
           git push origin master
+
+      - name: Upload Allure results (core)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: |
+                **/target/allure-results/**
+          if-no-files-found: ignore
+
