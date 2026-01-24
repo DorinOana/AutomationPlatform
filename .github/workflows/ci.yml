@@ -97,6 +97,10 @@ jobs:
           git commit -m "chore(bom): sync versions from deps [skip ci]"
           git push origin master
 
+      - name: Generate Allure HTML report
+        if: always()
+        run: mvn -pl automationplatform-core -DskipTests allure:report
+
       - name: Upload Allure results (core)
         if: always()
         uses: actions/upload-artifact@v4
@@ -104,5 +108,14 @@ jobs:
           name: allure-results
           path: |
                 **/target/allure-results/**
+          if-no-files-found: ignore
+
+      - name: Upload Allure HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: |
+            automationplatform-core/target/site/allure-maven-plugin/**
           if-no-files-found: ignore
 

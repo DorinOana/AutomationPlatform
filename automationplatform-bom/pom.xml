@@ -40,6 +40,7 @@
         <log4j2.version>2.25.3</log4j2.version>
         <junit.jupiter.version>5.14.2</junit.jupiter.version>
         <allure.version>2.32.0</allure.version>
+        <allure.maven.version>2.12.0</allure.maven.version>
     </properties>
 
     <dependencyManagement>
@@ -77,5 +78,18 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>io.qameta.allure</groupId>
+                    <artifactId>allure-maven</artifactId>
+                    <version>${allure.maven.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
 
 </project>

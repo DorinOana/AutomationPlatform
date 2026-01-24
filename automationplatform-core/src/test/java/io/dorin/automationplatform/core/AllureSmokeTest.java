@@ -2,6 +2,7 @@ package io.dorin.automationplatform.core;
 
 import io.dorin.automationplatform.core.allure.AllureAttachments;
 import io.dorin.automationplatform.core.allure.AllureLinks;
+import io.dorin.automationplatform.core.allure.AllureSteps;
 import io.qameta.allure.junit5.AllureJunit5;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Tag;
@@ -18,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * AllureSmokeTest
- *
+ * <p>
  * Purpose:
  * -------
  * Minimal platform sanity test that verifies Allure is wired correctly:
@@ -26,30 +27,38 @@ import static org.junit.jupiter.api.Assertions.*;
  * - allure.results.directory is set by Surefire
  * - result files are generated in target/allure-results
  * - attachments are written
- *
+ * <p>
  * Why this test exists:
  * ---------------------
  * Reporting is a core platform feature and must not silently break
  * when upgrading dependencies or plugins.
- *
+ * <p>
  * Tagging:
  * --------
  * Tagged as "smoke" so it can be executed in CI pipelines with:
  * - mvn test -Dgroups=smoke
  */
 @Tag("smoke")
-//@ExtendWith(AllureJunit5.class)
+@ExtendWith(AllureJunit5.class)
 class AllureSmokeTest {
 
     @Test
     void should_generate_allure_results_and_attachments() {
-        AllureAttachments.text("smoke-attachment", "Allure is wired ✅");
-        AllureAttachments.json("smoke-json", "{\"status\":\"ok\"}");
+        AllureSteps.step("Attach basic diagnostics", () -> {
+            AllureAttachments.text("smoke-attachment", "Allure is wired ✅");
+            AllureAttachments.json("smoke-json", "{\"status\":\"ok\"}");
+        });
 
         // Link helpers smoke coverage (should not throw; should be serialized into results)
-        AllureLinks.link("spec", "https://example.com/spec");
-        AllureLinks.issue("JIRA-123", "https://example.com/jira/JIRA-123");
-        AllureLinks.tms("TC-456", "https://example.com/tms/TC-456");
+        AllureSteps.step("Add reference links", () -> {
+            AllureLinks.link("spec", "https://example.com/spec");
+            AllureLinks.issue("JIRA-123", "https://example.com/jira/JIRA-123");
+            AllureLinks.tms("TC-456", "https://example.com/tms/TC-456");
+        });
+
+        AllureSteps.step("Log a message", () -> {
+            AllureAttachments.text("log", "Core smoke executed successfully");
+        });
 
         // The actual filesystem verification is performed in @AfterAll
         assertTrue(true);
