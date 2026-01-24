@@ -239,3 +239,14 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+      - name: Add report link to job summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## 📊 Test Reports" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Allure landing page:** ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Master latest:** ${{ steps.deployment.outputs.page_url }}allure/latest/" >> $GITHUB_STEP_SUMMARY
+          echo "- **This run:** ${{ steps.deployment.outputs.page_url }}allure/runs/${{ github.run_id }}/" >> $GITHUB_STEP_SUMMARY
+  
+
