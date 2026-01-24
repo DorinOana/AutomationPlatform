@@ -139,34 +139,91 @@ jobs:
           OUT_DIR="public/allure"
 
           RUN_ID="${{ github.run_id }}"
+          REPO="${{ github.repository }}"
+          EVENT="${{ github.event_name }}"
+          REF_NAME="${{ github.ref_name }}"
 
           rm -rf public
           mkdir -p "${OUT_DIR}/runs/${RUN_ID}"
           cp -R "${REPORT_DIR}/." "${OUT_DIR}/runs/${RUN_ID}/"
 
           # master latest
-          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" == "master" ]]; then
+          if [[ "${EVENT}" == "push" && "${REF_NAME}" == "master" ]]; then
             mkdir -p "${OUT_DIR}/latest"
             cp -R "${REPORT_DIR}/." "${OUT_DIR}/latest/"
           fi
 
-          # PR latest (note: this deploy replaces the site content)
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          # PR latest
+          PR_NUMBER=""
+          if [[ "${EVENT}" == "pull_request" ]]; then
             PR_NUMBER="${{ github.event.pull_request.number }}"
             mkdir -p "${OUT_DIR}/latest/pr-${PR_NUMBER}"
             cp -R "${REPORT_DIR}/." "${OUT_DIR}/latest/pr-${PR_NUMBER}/"
           fi
 
-          cat > public/index.html <<'HTML'
+          # build optional links
+          MASTER_LATEST_LI=""
+          if [[ "${EVENT}" == "push" && "${REF_NAME}" == "master" ]]; then
+            MASTER_LATEST_LI='<li><a href="./allure/latest/">Latest (master)</a></li>'
+          fi
+
+          PR_LATEST_LI=""
+          if [[ -n "${PR_NUMBER}" ]]; then
+            PR_LATEST_LI="<li><a href=\"./allure/latest/pr-${PR_NUMBER}/\">Latest (PR #${PR_NUMBER})</a></li>"
+          fi
+
+          cat > public/index.html <<HTML
           <!doctype html>
-          <html>
+          <html lang="en">
             <head>
               <meta charset="utf-8" />
-              <meta http-equiv="refresh" content="0; url=./allure/latest/" />
-              <title>AutomationPlatform Reports</title>
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <title>${REPO} – Test Reports</title>
+              <style>
+                body {
+                  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+                  margin: 40px;
+                  line-height: 1.4;
+                }
+                .card {
+                  max-width: 820px;
+                  padding: 22px;
+                  border: 1px solid #e5e7eb;
+                  border-radius: 14px;
+                }
+                h1 { margin: 0 0 6px; font-size: 22px; }
+                p { margin: 8px 0; color: #374151; }
+                ul { margin: 14px 0 0; padding-left: 18px; }
+                li { margin: 8px 0; }
+                a { color: #2563eb; text-decoration: none; }
+                a:hover { text-decoration: underline; }
+                code {
+                  background: #f3f4f6;
+                  padding: 2px 6px;
+                  border-radius: 6px;
+                }
+                .meta {
+                  margin-top: 14px;
+                  color: #6b7280;
+                  font-size: 13px;
+                }
+              </style>
             </head>
             <body>
-              <p>Redirecting to <a href="./allure/latest/">Allure latest report</a>…</p>
+              <div class="card">
+                <h1>${REPO} – Allure Test Reports</h1>
+                <p>Reports published automatically from GitHub Actions.</p>
+
+                <ul>
+                  ${MASTER_LATEST_LI}
+                  <li><a href="./allure/runs/${RUN_ID}/">This run (${RUN_ID})</a></li>
+                  ${PR_LATEST_LI}
+                </ul>
+
+                <div class="meta">
+                  Event: <code>${EVENT}</code> • Ref: <code>${REF_NAME}</code>
+                </div>
+              </div>
             </body>
           </html>
           HTML
