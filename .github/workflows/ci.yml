@@ -24,10 +24,20 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    concurrency:
+      group: pages
+      cancel-in-progress: false
 
     # Prevent infinite loops when the workflow auto-commits with [skip ci]
     if: >
@@ -118,4 +128,57 @@ jobs:
           path: |
             automationplatform-core/target/site/allure-maven-plugin/**
           if-no-files-found: ignore
+
+      - name: Prepare Allure Pages content
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          REPORT_DIR="automationplatform-core/target/site/allure-maven-plugin"
+          OUT_DIR="public/allure"
+
+          RUN_ID="${{ github.run_id }}"
+
+          rm -rf public
+          mkdir -p "${OUT_DIR}/runs/${RUN_ID}"
+          cp -R "${REPORT_DIR}/." "${OUT_DIR}/runs/${RUN_ID}/"
+
+          # master latest
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" == "master" ]]; then
+            mkdir -p "${OUT_DIR}/latest"
+            cp -R "${REPORT_DIR}/." "${OUT_DIR}/latest/"
+          fi
+
+          # PR latest (note: this deploy replaces the site content)
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+            mkdir -p "${OUT_DIR}/latest/pr-${PR_NUMBER}"
+            cp -R "${REPORT_DIR}/." "${OUT_DIR}/latest/pr-${PR_NUMBER}/"
+          fi
+
+          cat > public/index.html <<'HTML'
+          <!doctype html>
+          <html>
+            <head>
+              <meta charset="utf-8" />
+              <meta http-equiv="refresh" content="0; url=./allure/latest/" />
+              <title>AutomationPlatform Reports</title>
+            </head>
+            <body>
+              <p>Redirecting to <a href="./allure/latest/">Allure latest report</a>…</p>
+            </body>
+          </html>
+          HTML
+
+      - name: Upload Pages artifact
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        if: always()
+        id: deployment
+        uses: actions/deploy-pages@v4
 
