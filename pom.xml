@@ -24,7 +24,8 @@
         <module>automationplatform-deps</module>
         <module>automationplatform-bom</module>
         <module>automationplatform-core</module>
-        <!-- future: automationplatform-api, automationplatform-ui, automationplatform-mock, ... -->
+        <module>automationplatform-api</module>
+        <!-- future:  automationplatform-ui, automationplatform-mock, ... -->
     </modules>
 
     <properties>
@@ -36,9 +37,6 @@
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
         <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
 
-        <!-- Surefire tag filters (JUnit5 @Tag). Empty = run everything. -->
-        <groups></groups>
-        <excludedGroups></excludedGroups>
     </properties>
 
     <build>
@@ -62,8 +60,6 @@
                     <configuration>
                         <!-- Helps avoid JPMS/module-path edge cases in test automation setups -->
                         <useModulePath>false</useModulePath>
-                        <groups>${groups}</groups>
-                        <excludedGroups>${excludedGroups}</excludedGroups>
                     </configuration>
                 </plugin>
 

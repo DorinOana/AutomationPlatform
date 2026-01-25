@@ -1,0 +1,49 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.dorin.automationplatform</groupId>
+        <artifactId>automationplatform-deps</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../automationplatform-deps/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>automationplatform-api</artifactId>
+    <name>AutomationPlatform - API</name>
+
+    <dependencies>
+        <!-- common infrastructure (logging + allure helpers etc.) -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>automationplatform-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- REST Assured (versions come from automationplatform-deps via dependencyManagement) -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>json-path</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>xml-path</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>json-schema-validator</artifactId>
+        </dependency>
+
+        <!-- Assertions -->
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

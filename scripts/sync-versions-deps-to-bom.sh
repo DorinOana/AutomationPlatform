@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# =========================
+# Config
+# =========================
 DEPS_POM="automationplatform-deps/pom.xml"
 BOM_POM="automationplatform-bom/pom.xml"
 
+# =========================
+# Sanity checks
+# =========================
 if [[ ! -f "$DEPS_POM" ]]; then
   echo "ERROR: $DEPS_POM not found" >&2
   exit 1
@@ -14,69 +20,88 @@ if [[ ! -f "$BOM_POM" ]]; then
   exit 1
 fi
 
-# Keys we want to keep in sync (add new ones here as your platform grows).
-KEYS=(
-  "slf4j.version"
-  "log4j2.version"
-  "junit.jupiter.version"
+# =========================
+# Python does the heavy lifting
+# (multiline-safe, predictable, portable)
+# =========================
+python3 - <<'PY'
+from pathlib import Path
+import re
+
+deps_pom = Path("automationplatform-deps/pom.xml").read_text(encoding="utf-8")
+bom_pom  = Path("automationplatform-bom/pom.xml").read_text(encoding="utf-8")
+
+def extract_block(text: str, begin: str, end: str) -> str:
+    """
+    Extracts text between two marker comments.
+    """
+    pattern = re.compile(
+        rf"{re.escape(begin)}(.*?){re.escape(end)}",
+        re.DOTALL
+    )
+    match = pattern.search(text)
+    if not match:
+        raise SystemExit(f"ERROR: Could not find block:\n{begin} ... {end}")
+    return match.group(1).strip()
+
+def replace_block(text: str, begin: str, end: str, new_content: str) -> str:
+    """
+    Replaces text between two marker comments.
+    """
+    pattern = re.compile(
+        rf"({re.escape(begin)})(.*?)(\s*{re.escape(end)})",
+        re.DOTALL
+    )
+    if not pattern.search(text):
+        raise SystemExit(f"ERROR: Could not replace block:\n{begin} ... {end}")
+    return pattern.sub(
+        rf"\1\n{new_content}\n\3",
+        text,
+        count=1
+    )
+
+# =========================
+# Markers (single source of truth)
+# =========================
+PROPS_BEGIN = "<!-- BEGIN BOM EXPORT PROPERTIES -->"
+PROPS_END   = "<!-- END BOM EXPORT PROPERTIES -->"
+
+DEPS_BEGIN = "<!-- BEGIN BOM EXPORT DEPENDENCIES -->"
+DEPS_END   = "<!-- END BOM EXPORT DEPENDENCIES -->"
+
+BOM_PROPS_BEGIN = "<!-- BEGIN SYNC FROM DEPS -->"
+BOM_PROPS_END   = "<!-- END SYNC FROM DEPS -->"
+
+BOM_DEPS_BEGIN = "<!-- BEGIN SYNC DEPENDENCIES FROM DEPS -->"
+BOM_DEPS_END   = "<!-- END SYNC DEPENDENCIES FROM DEPS -->"
+
+# =========================
+# Extract from deps
+# =========================
+exported_properties = extract_block(deps_pom, PROPS_BEGIN, PROPS_END)
+exported_dependencies = extract_block(deps_pom, DEPS_BEGIN, DEPS_END)
+
+# =========================
+# Replace in bom
+# =========================
+bom_pom = replace_block(
+    bom_pom,
+    BOM_PROPS_BEGIN,
+    BOM_PROPS_END,
+    exported_properties
 )
 
-# Helper: extract <key>value</key> from deps POM properties.
-extract_value() {
-  local key="$1"
-  # Match: <key>...</key> within properties. Keep it simple and explicit.
-  # Works as long as each property is on one line (which is typical and recommended).
-  local line
-  line="$(grep -E "^[[:space:]]*<${key}>.*</${key}>[[:space:]]*$" "$DEPS_POM" || true)"
-  if [[ -z "$line" ]]; then
-    echo "ERROR: Could not find <${key}>...</${key}> in $DEPS_POM" >&2
-    exit 1
-  fi
-  # Strip tags
-  echo "$line" | sed -E "s/^[[:space:]]*<${key}>(.*)<\/${key}>[[:space:]]*$/\1/"
-}
+bom_pom = replace_block(
+    bom_pom,
+    BOM_DEPS_BEGIN,
+    BOM_DEPS_END,
+    exported_dependencies
+)
 
-# Helper: replace <key>...</key> in BOM POM.
-replace_value_in_bom() {
-  local key="$1"
-  local value="$2"
+# =========================
+# Write result
+# =========================
+Path("automationplatform-bom/pom.xml").write_text(bom_pom, encoding="utf-8")
 
-  # macOS sed needs -i '' ; Linux sed uses -i
-  if sed --version >/dev/null 2>&1; then
-    # GNU sed (Linux)
-    sed -i -E "s|^([[:space:]]*<${key}>).*(</${key}>[[:space:]]*)$|\1${value}\2|" "$BOM_POM"
-  else
-    # BSD sed (macOS)
-    sed -i '' -E "s|^([[:space:]]*<${key}>).*(</${key}>[[:space:]]*)$|\1${value}\2|" "$BOM_POM"
-  fi
-}
-
-echo "Syncing versions from $DEPS_POM -> $BOM_POM"
-changed=0
-
-for key in "${KEYS[@]}"; do
-  deps_val="$(extract_value "$key")"
-
-  # Read current bom value (optional, for nice logging)
-  bom_line="$(grep -E "^[[:space:]]*<${key}>.*</${key}>[[:space:]]*$" "$BOM_POM" || true)"
-  if [[ -z "$bom_line" ]]; then
-    echo "ERROR: Could not find <${key}>...</${key}> in $BOM_POM" >&2
-    echo "Tip: ensure the key exists in BOM properties before syncing." >&2
-    exit 1
-  fi
-  bom_val="$(echo "$bom_line" | sed -E "s/^[[:space:]]*<${key}>(.*)<\/${key}>[[:space:]]*$/\1/")"
-
-  if [[ "$deps_val" != "$bom_val" ]]; then
-    echo " - ${key}: ${bom_val} -> ${deps_val}"
-    replace_value_in_bom "$key" "$deps_val"
-    changed=1
-  else
-    echo " - ${key}: unchanged (${deps_val})"
-  fi
-done
-
-if [[ "$changed" -eq 1 ]]; then
-  echo "Done. BOM updated."
-else
-  echo "Done. No changes needed."
-fi
+print("✔ BOM synced successfully from deps")
+PY

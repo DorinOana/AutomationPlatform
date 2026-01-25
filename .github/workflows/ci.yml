@@ -62,7 +62,7 @@ jobs:
         if: github.event_name != 'workflow_dispatch'
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            mvn -q test -Dgroups=smoke
+            mvn -q test -Djunit.jupiter.tags=smoke
           else
             mvn -q clean install
           fi
@@ -71,23 +71,26 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           if [ "${{ inputs.mode }}" = "smoke" ]; then
-            mvn -q test -Dgroups=smoke
+            mvn -q test -Djunit.jupiter.tags=smoke
           else
             mvn -q clean install
           fi
 
       # Optional guardrail: on normal pushes, you can verify BOM is in sync without auto-committing.
-      # If you want this, uncomment the next block.
-      # - name: Sync deps -> bom (check only)
-      #   if: github.event_name != 'workflow_dispatch'
-      #   run: |
-      #     ./scripts/sync-versions-deps-to-bom.sh
-      #     git diff --exit-code
-
-      - name: Sync deps -> bom (manual, with optional push)
-        if: github.event_name == 'workflow_dispatch'
+      - name: Sync deps -> bom (check only)
+        if: github.event_name != 'workflow_dispatch'
         run: |
-          ./scripts/sync-versions-deps-to-bom.sh
+           ./scripts/sync-versions-deps-to-bom.sh
+           git diff --exit-code
+
+      - name: Sync deps -> bom (manual, master only)
+        if: >
+          github.event_name == 'workflow_dispatch' &&
+          inputs.sync_bom == true &&
+          github.ref_name == 'master'
+        run: |
+          bash scripts/sync-versions-deps-to-bom.sh
+      
 
       - name: Commit & push BOM changes (manual, master only)
         if: >

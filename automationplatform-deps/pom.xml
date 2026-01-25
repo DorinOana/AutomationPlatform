@@ -30,6 +30,7 @@
     <name>AutomationPlatform Deps Parent</name>
 
     <properties>
+        <!-- BEGIN BOM EXPORT PROPERTIES -->
         <!-- Core -->
         <slf4j.version>2.0.17</slf4j.version>
         <log4j2.version>2.25.3</log4j2.version>
@@ -38,11 +39,17 @@
         <!-- Reporting -->
         <allure.version>2.32.0</allure.version>
         <allure.maven.version>2.12.0</allure.maven.version>
+        <!-- API -->
+        <restassured.version>5.5.0</restassured.version>
+        <assertj.version>3.27.3</assertj.version>
+        <jackson.version>2.17.2</jackson.version>
+        <apache.httpclient4.version>4.5.14</apache.httpclient4.version>
+        <!-- END BOM EXPORT PROPERTIES -->
     </properties>
 
     <dependencyManagement>
         <dependencies>
-
+            <!-- BEGIN BOM EXPORT DEPENDENCIES -->
             <!-- Log4j2 manages its own internal module versions -->
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
@@ -51,14 +58,12 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
             <!-- SLF4J API -->
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
-
             <!-- JUnit manages its own internal platform module versions -->
             <dependency>
                 <groupId>org.junit</groupId>
@@ -67,8 +72,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-
             <!-- Allure manages its own internal module versions -->
             <dependency>
                 <groupId>io.qameta.allure</groupId>
@@ -77,8 +80,79 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>rest-assured</artifactId>
+                <version>${restassured.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>json-path</artifactId>
+                <version>${restassured.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>xml-path</artifactId>
+                <version>${restassured.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>json-schema-validator</artifactId>
+                <version>${restassured.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${apache.httpclient4.version}</version>
+            </dependency>
+            <!-- END BOM EXPORT DEPENDENCIES -->
         </dependencies>
     </dependencyManagement>
+
+    <dependencies>
+        <!-- JUnit 5 (available to tests in all child modules) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Allure JUnit 5 adapter (so tests generate allure-results) -->
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <pluginManagement>
