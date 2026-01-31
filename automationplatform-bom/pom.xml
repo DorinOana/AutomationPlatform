@@ -49,13 +49,7 @@
         <assertj.version>3.27.3</assertj.version>
         <jackson.version>2.17.2</jackson.version>
         <apache.httpclient4.version>4.5.14</apache.httpclient4.version>
-
-
-
-
-
-
-        <!-- END SYNC FROM DEPS -->
+<!-- END SYNC FROM DEPS -->
     </properties>
 
     <dependencyManagement>
@@ -145,13 +139,7 @@
                 <artifactId>httpclient</artifactId>
                 <version>${apache.httpclient4.version}</version>
             </dependency>
-
-
-
-
-
-
-            <!-- END SYNC DEPENDENCIES FROM DEPS -->
+<!-- END SYNC DEPENDENCIES FROM DEPS -->
         </dependencies>
     </dependencyManagement>
 

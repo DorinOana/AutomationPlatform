@@ -49,16 +49,13 @@ def replace_block(text: str, begin: str, end: str, new_content: str) -> str:
     Replaces text between two marker comments.
     """
     pattern = re.compile(
-        rf"({re.escape(begin)})(.*?)(\s*{re.escape(end)})",
+        rf"{re.escape(begin)}(.*?){re.escape(end)}",
         re.DOTALL
     )
     if not pattern.search(text):
         raise SystemExit(f"ERROR: Could not replace block:\n{begin} ... {end}")
-    return pattern.sub(
-        rf"\1\n{new_content}\n\3",
-        text,
-        count=1
-    )
+    replacement = f"{begin}\n{new_content}\n{end}"
+    return pattern.sub(replacement, text, count=1)
 
 # =========================
 # Markers (single source of truth)
