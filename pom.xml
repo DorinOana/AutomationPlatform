@@ -36,6 +36,7 @@
         <!-- Plugin versions (centralized) -->
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
         <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
+        <allure.maven.version>2.12.0</allure.maven.version>
 
     </properties>
 
@@ -60,11 +61,50 @@
                     <configuration>
                         <!-- Helps avoid JPMS/module-path edge cases in test automation setups -->
                         <useModulePath>false</useModulePath>
+                        <!-- Ensure all modules write results to target/allure-results -->
+                        <systemPropertyVariables>
+                            <allure.results.directory>${maven.multiModuleProjectDirectory}/target/allure-results</allure.results.directory>
+                        </systemPropertyVariables>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>io.qameta.allure</groupId>
+                    <artifactId>allure-maven</artifactId>
+                    <version>${allure.maven.version}</version>
                 </plugin>
 
             </plugins>
         </pluginManagement>
     </build>
+
+    <profiles>
+        <profile>
+            <id>allure</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.qameta.allure</groupId>
+                        <artifactId>allure-maven</artifactId>
+                        <version>${allure.maven.version}</version>
+                        <configuration>
+                            <resultsDirectory>${maven.multiModuleProjectDirectory}/target/allure-results</resultsDirectory>
+                            <reportDirectory>${maven.multiModuleProjectDirectory}/target/allure-report</reportDirectory>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>allure-aggregate</id>
+                                <inherited>false</inherited>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>aggregate</goal>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

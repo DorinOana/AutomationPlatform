@@ -112,7 +112,7 @@ jobs:
 
       - name: Generate Allure HTML report
         if: always()
-        run: mvn -pl automationplatform-core -DskipTests allure:report
+        run: mvn -DskipTests -Pallure verify
 
       - name: Upload Allure results (core)
         if: always()
@@ -120,7 +120,7 @@ jobs:
         with:
           name: allure-results
           path: |
-                **/target/allure-results/**
+                target/allure-results/**
           if-no-files-found: ignore
 
       - name: Upload Allure HTML report
@@ -129,7 +129,7 @@ jobs:
         with:
           name: allure-report
           path: |
-            automationplatform-core/target/site/allure-maven-plugin/**
+            target/allure-report/**
           if-no-files-found: ignore
 
       - name: Prepare Allure Pages content
@@ -138,7 +138,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          REPORT_DIR="automationplatform-core/target/site/allure-maven-plugin"
+          REPORT_DIR="target/allure-report"
           OUT_DIR="public/allure"
 
           RUN_ID="${{ github.run_id }}"
@@ -252,4 +252,3 @@ jobs:
           echo "- **Master latest:** ${{ steps.deployment.outputs.page_url }}allure/latest/" >> $GITHUB_STEP_SUMMARY
           echo "- **This run:** ${{ steps.deployment.outputs.page_url }}allure/runs/${{ github.run_id }}/" >> $GITHUB_STEP_SUMMARY
   
-
